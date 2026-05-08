@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "okx-perp-reliable"
-version = "0.1.0a1"
+version = "0.1.0a2"
 description = "Reliable asyncio SDK for OKX USDT-margined perpetual swap REST order placement."
 authors = ["Alan <alan@example.com>"]
 license = "MIT"

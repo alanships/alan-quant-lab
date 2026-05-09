@@ -4,6 +4,13 @@ This runbook publishes `okx-perp-reliable` to PyPI from GitHub Actions using
 PyPI Trusted Publisher. Do not create or store a PyPI API token for this
 project.
 
+## Release history
+
+| Version | Tagged | Notes |
+|---|---|---|
+| `v0.1.0a1` | 2026-05-09 | First public alpha. Reconciliation contract pinned; OKX USDT-perp swap REST place + cancel + query only. Yanked after public-history cleanup. PyPI: <https://pypi.org/project/okx-perp-reliable/0.1.0a1/> |
+| `v0.1.0a2` | 2026-05-09 | Current public alpha after public-history cleanup. PyPI: <https://pypi.org/project/okx-perp-reliable/0.1.0a2/> |
+
 ## One-time setup
 
 Alan does this once, manually.
@@ -43,22 +50,74 @@ poetry run black --check .
 
 # 3. Commit the version bump:
 git add pyproject.toml
-git commit -m "release: v<NEW_VERSION>"
+git commit -m "Release <NEW_VERSION>"
 
-# 4. Tag and push:
+# 4. Run the pre-push check below.
+
+# 5. Tag and push:
 git tag v<NEW_VERSION>
 git push origin main --tags
 
-# 5. Watch the workflow:
+# 6. Watch the workflow:
 # https://github.com/alanships/alan-quant-lab/actions/workflows/publish.yml
 
-# 6. Verify PyPI:
+# 7. Verify PyPI:
 # https://pypi.org/project/okx-perp-reliable/<NEW_VERSION>/
 ```
 
 Use either a tag push or a GitHub Release published event for a given version.
 If both fire for the same version, the second publish can fail because PyPI
 does not allow overwriting existing files.
+
+## Pre-push check
+
+Before pushing the release commit and tag, run the privacy/style checks
+defined in `.codex/PUBLIC_COMMIT_STYLE.md`:
+
+```bash
+# Last 10 messages — read as a stranger.
+git log --oneline -10
+
+# Anything from .codex/ being pushed?
+git diff --stat origin/main..HEAD | grep -E '^\s*\.codex/' \
+  && echo "REVIEW: .codex/ in push" || echo "no .codex/ leaks"
+
+# Internal tooling words in pending messages?
+git log --format=%B origin/main..HEAD | \
+  grep -iE 'codex|claude|gpt|llm|\bagent\b|task [0-9]+|card [0-9]+' \
+  && echo "REVIEW: internal refs found" || echo "messages clean"
+```
+
+If any check surfaces something, fix before pushing. Once a public tag is
+pushed, do not force-push; record the lesson and tighten the rules instead.
+
+## Post-release smoke test
+
+After the publish workflow goes green and PyPI shows the new version, verify
+in a fresh virtualenv that the package is actually installable and importable:
+
+```bash
+python -m venv /tmp/okx-perp-reliable-smoke
+source /tmp/okx-perp-reliable-smoke/bin/activate
+pip install --no-cache-dir okx-perp-reliable==<NEW_VERSION>
+python -c "
+from okx_perp_reliable import (
+    ReliablePerpClient,
+    OrderSide,
+    OrderType,
+    ResultStatus,
+    AuthenticationError,
+    RateLimitError,
+)
+print('imports OK', ReliablePerpClient.__module__)
+"
+deactivate
+rm -rf /tmp/okx-perp-reliable-smoke
+```
+
+If any import fails, the release is broken even though the workflow went green.
+Yank the version on PyPI, fix the bug, bump to the next version, and
+re-release. Never re-use a broken version number.
 
 ## Manual trigger
 

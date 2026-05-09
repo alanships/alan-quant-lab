@@ -13,9 +13,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
+        # Node 20 runtime; actions/checkout v4 release notes:
+        # https://github.com/actions/checkout/releases/tag/v4.0.0
         uses: actions/checkout@v4
 
       - name: Set up Python
+        # Node 20 runtime; actions/setup-python v5 release notes:
+        # https://github.com/actions/setup-python/releases/tag/v5.0.0
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -27,6 +31,8 @@ jobs:
         run: poetry config virtualenvs.in-project true
 
       - name: Cache Poetry
+        # Node 20 runtime; actions/cache v4 release notes:
+        # https://github.com/actions/cache/releases/tag/v4.0.0
         uses: actions/cache@v4
         with:
           path: |
@@ -53,9 +59,13 @@ jobs:
           - "3.12"
     steps:
       - name: Check out repository
+        # Node 20 runtime; actions/checkout v4 release notes:
+        # https://github.com/actions/checkout/releases/tag/v4.0.0
         uses: actions/checkout@v4
 
       - name: Set up Python
+        # Node 20 runtime; actions/setup-python v5 release notes:
+        # https://github.com/actions/setup-python/releases/tag/v5.0.0
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -67,6 +77,8 @@ jobs:
         run: poetry config virtualenvs.in-project true
 
       - name: Cache Poetry
+        # Node 20 runtime; actions/cache v4 release notes:
+        # https://github.com/actions/cache/releases/tag/v4.0.0
         uses: actions/cache@v4
         with:
           path: |

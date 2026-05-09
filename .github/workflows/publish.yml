@@ -17,9 +17,13 @@ jobs:
       id-token: write
     steps:
       - name: Check out repository
+        # Node 20 runtime; actions/checkout v4 release notes:
+        # https://github.com/actions/checkout/releases/tag/v4.0.0
         uses: actions/checkout@v4
 
       - name: Set up Python
+        # Node 20 runtime; actions/setup-python v5 release notes:
+        # https://github.com/actions/setup-python/releases/tag/v5.0.0
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -42,6 +46,7 @@ jobs:
           python -c "import okx_perp_reliable"
 
       - name: Publish to PyPI
+        # Trusted publishing action; release/v1 tracks the current Node runtime.
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           verbose: true

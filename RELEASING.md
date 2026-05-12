@@ -11,6 +11,10 @@ project.
 | `v0.1.0a1` | 2026-05-09 | First public alpha. Reconciliation contract pinned; OKX USDT-perp swap REST place + cancel + query only. Yanked after public-history cleanup. PyPI: <https://pypi.org/project/okx-perp-reliable/0.1.0a1/> |
 | `v0.1.0a2` | 2026-05-09 | Current public alpha after public-history cleanup. PyPI: <https://pypi.org/project/okx-perp-reliable/0.1.0a2/> |
 
+`v0.1.0a1` was yanked because a history rewrite changed the source backing
+that version number. Per PyPI policy, version numbers are not re-used, so the
+rewritten source was published as `0.1.0a2`.
+
 ## One-time setup
 
 Alan does this once, manually.

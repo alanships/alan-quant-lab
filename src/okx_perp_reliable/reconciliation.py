@@ -37,10 +37,16 @@ class OrderReconciler:
         创建订单状态确认器。
 
         ``reconciliation_51603_grace_seconds`` implements the opt-in 51603
-        retry policy recorded in ``.codex/DECISIONS.md``. The default ``0.0``
-        preserves immediate FAILED behavior.
-        ``reconciliation_51603_grace_seconds`` 对应 ``.codex/DECISIONS.md``
-        记录的 51603 可选重试策略。默认 ``0.0`` 保持立即 FAILED 行为。
+        retry policy. The default ``0.0`` preserves immediate FAILED
+        behavior. This knob is named after OKX sCode 51603. In a future
+        multi-exchange version it may be aliased to a more general name such
+        as ``reconciliation_not_found_grace_seconds``; the OKX-specific name
+        will remain supported.
+
+        ``reconciliation_51603_grace_seconds`` 对应 51603 可选重试策略。默认
+        ``0.0`` 保持立即 FAILED 行为。该参数名来自 OKX sCode 51603；未来多
+        交易所版本中可能增加更通用的别名，例如
+        ``reconciliation_not_found_grace_seconds``，但 OKX 专用名称会继续支持。
         """
         self.http_client = http_client
         self.max_attempts = max_attempts

@@ -97,11 +97,26 @@ class ReliablePerpClient:
         td_mode: str = "cross",
         reduce_only: bool = False,
     ) -> OrderResult:
-        """Place an idempotent order. / 发起幂等下单。
+        """Place an idempotent perpetual swap order.
 
-        The method returns CONFIRMED, FAILED, or UNKNOWN instead of leaking
-        ambiguous timeout states. 该方法返回 CONFIRMED、FAILED 或 UNKNOWN，
-        不把超时后的不确定状态泄漏给调用方。
+        发起幂等永续合约下单。
+
+        Returns ``OrderResult`` with status one of:
+        ``CONFIRMED`` means OKX acknowledged the order; inspect
+        ``order_status`` for resting, partial, or filled state.
+        ``FAILED`` means OKX did not accept the order; submit again with a
+        new ``clOrdId`` and do not reuse the same one.
+        ``UNKNOWN`` means the SDK could not decide within the reconciliation
+        budget; do not retry automatically, inspect the account manually.
+
+        May raise errors that never appear inside ``OrderResult``:
+        ``AuthenticationError`` for config-class OKX errors, ``RateLimitError``
+        for OKX sCode 50011 / HTTP 429, ``NetworkError`` when reconciliation
+        cannot start, and ``ConfigurationError`` for invalid configuration.
+
+        返回值 ``OrderResult.status`` 三态契约：``CONFIRMED`` / ``FAILED`` /
+        ``UNKNOWN`` 分别表示"已确认 / 已拒绝 / 状态未知，请勿自动重试"。
+        认证、限频、传输和配置类错误以异常形式抛出，不会进入 ``OrderResult``。
         """
         request = OrderRequest(
             inst_id=inst_id,

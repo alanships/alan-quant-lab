@@ -26,11 +26,53 @@ pip install okx-perp-reliable
 ## Minimal Example
 
 ```python
+import asyncio
 from decimal import Decimal
-from okx_perp_reliable import OrderSide, OrderType, ReliablePerpClient
+
+from okx_perp_reliable import (
+    AuthenticationError,
+    OrderSide,
+    OrderType,
+    ReliablePerpClient,
+    ResultStatus,
+)
+
+
 async def main() -> None:
-    client = ReliablePerpClient(api_key="...", api_secret="...", passphrase="...", demo=True)
-    result = await client.place_order(inst_id="BTC-USDT-SWAP", side=OrderSide.BUY, order_type=OrderType.MARKET, size=Decimal("0.01"), pos_side="long")
+    client = ReliablePerpClient(
+        api_key="...",
+        api_secret="...",
+        passphrase="...",
+        demo=True,
+    )
+    try:
+        try:
+            result = await client.place_order(
+                inst_id="BTC-USDT-SWAP",
+                side=OrderSide.BUY,
+                order_type=OrderType.MARKET,
+                size=Decimal("0.01"),
+                pos_side="long",
+            )
+        except AuthenticationError as e:
+            # Config-class errors (signature, timestamp, passphrase)
+            # are raised, NOT wrapped in OrderResult.
+            print("auth failed:", e.okx_code, e)
+            return
+
+        match result.status:
+            case ResultStatus.CONFIRMED:
+                print("confirmed", result.order_status)
+            case ResultStatus.FAILED:
+                print("failed", result.error)
+            case ResultStatus.UNKNOWN:
+                print("unknown; inspect manually")
+    finally:
+        await client.close()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ## Mock Infrastructure

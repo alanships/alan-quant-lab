@@ -39,6 +39,28 @@ Alan does this once, manually.
    publishers. Configure a parallel pending publisher there and add a separate
    workflow in a future card if needed.
 
+### Activate the pre-push hook (one-time per clone)
+
+The repo ships a `pre-push` hook at `.githooks/pre-push` that blocks pushes
+containing `.codex/` paths, internal-tooling references in commit messages,
+Conventional Commits prefixes, or subjects > 50 chars.
+
+To activate it for your clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Verify with:
+
+```bash
+git config core.hooksPath   # should print: .githooks
+```
+
+If a legitimate push needs to bypass the hook, which should be rare and
+reserved for real emergencies, use `git push --no-verify` and explain in the
+commit message body why.
+
 ## Cutting a release
 
 Run these steps locally:

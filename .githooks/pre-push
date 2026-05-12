@@ -1,0 +1,78 @@
+#!/bin/sh
+# Blocks pushes that violate public commit hygiene.
+# Checks paths, commit messages, Conventional Commit prefixes, and subject length.
+# Keep this aligned with .codex/PUBLIC_COMMIT_STYLE.md.
+# Activate per clone with: git config core.hooksPath .githooks
+
+zero_sha=0000000000000000000000000000000000000000
+
+fail() {
+    echo "pre-push: $1" >&2
+    echo "pre-push: see .codex/PUBLIC_COMMIT_STYLE.md" >&2
+    exit 1
+}
+
+base_for_new_branch() {
+    if git rev-parse --verify origin/main >/dev/null 2>&1; then
+        echo origin/main
+        return 0
+    fi
+    if git rev-parse --verify origin/HEAD >/dev/null 2>&1; then
+        echo origin/HEAD
+        return 0
+    fi
+    return 1
+}
+
+check_commit() {
+    commit=$1
+
+    if git diff-tree --root --no-commit-id --name-only -r "$commit" |
+        grep -qE '^\.codex/'
+    then
+        fail "commit touches .codex/: $commit"
+    fi
+
+    if git log -1 --format=%B "$commit" |
+        grep -qiE 'codex|claude|gpt|llm|\bagent\b|task [0-9]+|card [0-9]+'
+    then
+        fail "commit message contains internal tooling references: $commit"
+    fi
+
+    if git log -1 --format=%s "$commit" |
+        grep -qE '^(feat|fix|docs|chore|refactor|test|ci|build|perf|style|revert)(\(.*\))?:'
+    then
+        fail "commit subject uses Conventional Commits prefix: $commit"
+    fi
+
+    subject=$(git log -1 --format=%s "$commit")
+    if [ ${#subject} -gt 50 ]; then
+        fail "commit subject exceeds 50 chars: $commit"
+    fi
+}
+
+while read local_ref local_sha remote_ref remote_sha
+do
+    if [ -z "$local_ref" ]; then
+        continue
+    fi
+
+    if [ "$local_sha" = "$zero_sha" ]; then
+        continue
+    fi
+
+    if [ "$remote_sha" = "$zero_sha" ]; then
+        base=$(base_for_new_branch) ||
+            fail "cannot find origin/main or origin/HEAD for new branch"
+        range="$base..$local_sha"
+    else
+        range="$remote_sha..$local_sha"
+    fi
+
+    for commit in $(git rev-list "$range")
+    do
+        check_commit "$commit"
+    done
+done
+
+exit 0

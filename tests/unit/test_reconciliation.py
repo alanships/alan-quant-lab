@@ -265,6 +265,54 @@ async def _test_50113_raises_authentication_error() -> None:
     assert excinfo.value.okx_code == "50113"
 
 
+@pytest.mark.parametrize(
+    "s_code",
+    [
+        "50101",
+        "50102",
+        "50103",
+        "50104",
+        "50105",
+        "50106",
+        "50107",
+        "50108",
+        "50109",
+        "50110",
+    ],
+)
+def test_50101_through_50110_raise_authentication_error(s_code: str) -> None:
+    """Verify all 50101-50110 sCodes raise AuthenticationError.
+
+    验证 50101-50110 全部会抛出 AuthenticationError。
+    """
+    run(_test_50101_through_50110_raise_authentication_error(s_code))
+
+
+async def _test_50101_through_50110_raise_authentication_error(
+    s_code: str,
+) -> None:
+    """Run a place response with 50101-50110. / 执行 50101-50110 下单响应场景。"""
+    client = ReliablePerpClient(
+        api_key="key",
+        api_secret="secret",
+        passphrase="pass",
+        http_client=FakeHttp(
+            [{"code": s_code, "msg": "Authentication failure", "data": []}]
+        ),
+    )
+
+    with pytest.raises(AuthenticationError) as excinfo:
+        await client.place_order(
+            inst_id="BTC-USDT-SWAP",
+            side=OrderSide.BUY,
+            order_type=OrderType.LIMIT,
+            size=Decimal("1"),
+            price=Decimal("10000"),
+        )
+
+    assert excinfo.value.okx_code == s_code
+
+
 def test_50114_raises_authentication_error() -> None:
     """Verify auth-class sCode 50114 raises AuthenticationError.
 

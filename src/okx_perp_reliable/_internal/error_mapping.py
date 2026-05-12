@@ -52,7 +52,24 @@ ERROR_CODE_TO_EXCEPTION: dict[str, type[ReliableSdkError]] = {
 }
 
 DEFAULT_EXCEPTION = ReliableSdkError
-RAISE_ERROR_CODES = frozenset({"50111", "50112", "50113", "50114"})
+RAISE_ERROR_CODES = frozenset(
+    {
+        "50101",
+        "50102",
+        "50103",
+        "50104",
+        "50105",
+        "50106",
+        "50107",
+        "50108",
+        "50109",
+        "50110",
+        "50111",
+        "50112",
+        "50113",
+        "50114",
+    }
+)
 
 
 def classify_error_code(code: str) -> type[ReliableSdkError]:
